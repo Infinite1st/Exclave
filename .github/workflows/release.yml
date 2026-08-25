@@ -47,6 +47,10 @@ jobs:
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r29
+      - name: Update go.sum
+        run: |
+          cd library/core
+          go mod tidy
       - name: Native Build
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
