@@ -131,7 +131,7 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                             .setOnClickAction {
                                 startActivity(Intent(
                                     Intent.ACTION_VIEW,
-                                    "https://github.com/ExclaveNetwork/Exclave/releases".toUri()
+                                    "https://github.com/Infinite1st/Exclave/releases".toUri()
                                 ))
                             }
                             .setOnLongClickAction {
@@ -141,12 +141,12 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                             .build())
                         .addItem(MaterialAboutActionItem.Builder()
                             .icon(R.drawable.ic_baseline_airplanemode_active_24)
-                            .text(getString(R.string.version_x, "exclave-core"))
+                            .text(getString(R.string.version_x, "infinite-core"))
                             .subText(Libexclavecore.getV2RayVersion())
                             .setOnClickAction {
                                 startActivity(Intent(
                                     Intent.ACTION_VIEW,
-                                    "https://github.com/ExclaveNetwork/exclave-core".toUri()
+                                    "https://github.com/Infinite1st/exclave-core".toUri()
                                 ))
                             }
                             .build())
