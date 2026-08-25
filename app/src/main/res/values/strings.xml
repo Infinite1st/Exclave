@@ -193,6 +193,25 @@
     <string name="action_hysteria2" translatable="false">Hysteria 2</string>
     <string name="action_ssh" translatable="false">SSH</string>
     <string name="action_wireguard" translatable="false">WireGuard</string>
+    <string name="action_amneziawg" translatable="false">AmneziaWG</string>
+    <string name="amneziawg_obfuscation_cat">Obfuscation</string>
+    <string name="amneziawg_jc" translatable="false">Jc</string>
+    <string name="amneziawg_jmin" translatable="false">Jmin</string>
+    <string name="amneziawg_jmax" translatable="false">Jmax</string>
+    <string name="amneziawg_s1" translatable="false">S1</string>
+    <string name="amneziawg_s2" translatable="false">S2</string>
+    <string name="amneziawg_s3" translatable="false">S3</string>
+    <string name="amneziawg_s4" translatable="false">S4</string>
+    <string name="amneziawg_h1" translatable="false">H1</string>
+    <string name="amneziawg_h2" translatable="false">H2</string>
+    <string name="amneziawg_h3" translatable="false">H3</string>
+    <string name="amneziawg_h4" translatable="false">H4</string>
+    <string name="amneziawg_i1" translatable="false">I1</string>
+    <string name="amneziawg_i2" translatable="false">I2</string>
+    <string name="amneziawg_i3" translatable="false">I3</string>
+    <string name="amneziawg_i4" translatable="false">I4</string>
+    <string name="amneziawg_i5" translatable="false">I5</string>
+    <string name="amneziawg_header_protection_key">Header protection key</string>
     <string name="action_mieru" translatable="false">mieru</string>
     <string name="action_tuic5" translatable="false">TUIC</string>
     <string name="action_http3" translatable="false">HTTP/3</string>

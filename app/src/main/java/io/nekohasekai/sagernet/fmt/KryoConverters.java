@@ -51,6 +51,7 @@ import io.nekohasekai.sagernet.fmt.tuic5.Tuic5Bean;
 import io.nekohasekai.sagernet.fmt.v2ray.VLESSBean;
 import io.nekohasekai.sagernet.fmt.v2ray.VMessBean;
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean;
+import io.nekohasekai.sagernet.fmt.amneziawg.AmneziaWGBean;
 import io.nekohasekai.sagernet.ktx.KryosKt;
 import io.nekohasekai.sagernet.ktx.Logs;
 
@@ -146,6 +147,12 @@ public class KryoConverters {
     public static WireGuardBean wireguardDeserialize(byte[] bytes) {
         if (bytes == null || bytes.length == 0) return null;
         return deserialize(new WireGuardBean(), bytes);
+    }
+
+    @TypeConverter
+    public static AmneziaWGBean amneziawgDeserialize(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) return null;
+        return deserialize(new AmneziaWGBean(), bytes);
     }
 
     @TypeConverter

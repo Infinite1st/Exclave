@@ -69,6 +69,7 @@ import io.nekohasekai.sagernet.fmt.v2ray.VLESSBean
 import io.nekohasekai.sagernet.fmt.v2ray.VMessBean
 import io.nekohasekai.sagernet.fmt.v2ray.toUri
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
+import io.nekohasekai.sagernet.fmt.amneziawg.AmneziaWGBean
 import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.ktx.applyDefaultValues
 import io.nekohasekai.sagernet.ui.profile.*
@@ -100,6 +101,7 @@ data class ProxyEntity(
     var tuic5Bean: Tuic5Bean? = null,
     var sshBean: SSHBean? = null,
     var wgBean: WireGuardBean? = null,
+    var awgBean: AmneziaWGBean? = null,
     var juicityBean: JuicityBean? = null,
     var http3Bean: Http3Bean? = null,
     var anytlsBean: AnyTLSBean? = null,
@@ -131,6 +133,7 @@ data class ProxyEntity(
         const val TYPE_SHADOWQUIC = 28
         const val TYPE_TRUSTTUNNEL = 29
         const val TYPE_SNELL = 30
+        const val TYPE_AMNEZIAWG = 31
         const val TYPE_CHAIN = 8
         const val TYPE_BALANCER = 14
         const val TYPE_CONFIG = 13
@@ -216,6 +219,7 @@ data class ProxyEntity(
             TYPE_HYSTERIA2 -> hysteria2Bean = KryoConverters.hysteria2Deserialize(byteArray)
             TYPE_SSH -> sshBean = KryoConverters.sshDeserialize(byteArray)
             TYPE_WG -> wgBean = KryoConverters.wireguardDeserialize(byteArray)
+            TYPE_AMNEZIAWG -> awgBean = KryoConverters.amneziawgDeserialize(byteArray)
             TYPE_MIERU -> mieruBean = KryoConverters.mieruDeserialize(byteArray)
             TYPE_TUIC5 -> tuic5Bean = KryoConverters.tuic5Deserialize(byteArray)
             TYPE_JUICITY -> juicityBean = KryoConverters.juicityDeserialize(byteArray)
@@ -243,6 +247,7 @@ data class ProxyEntity(
         TYPE_HYSTERIA2 -> "Hysteria 2"
         TYPE_SSH -> "SSH"
         TYPE_WG -> "WireGuard"
+        TYPE_AMNEZIAWG -> "AmneziaWG"
         TYPE_MIERU -> "mieru"
         TYPE_TUIC5 -> "TUIC"
         TYPE_JUICITY -> "Juicity"
@@ -274,6 +279,7 @@ data class ProxyEntity(
             TYPE_HYSTERIA2 -> hysteria2Bean
             TYPE_SSH -> sshBean
             TYPE_WG -> wgBean
+            TYPE_AMNEZIAWG -> awgBean
             TYPE_MIERU -> mieruBean
             TYPE_TUIC5 -> tuic5Bean
             TYPE_JUICITY -> juicityBean
@@ -300,7 +306,7 @@ data class ProxyEntity(
 
     fun hasShareLink(): Boolean {
         return when (type) {
-            TYPE_SSH, TYPE_WG, TYPE_SNELL -> false
+            TYPE_SSH, TYPE_WG, TYPE_SNELL, TYPE_AMNEZIAWG -> false
             TYPE_CONFIG, TYPE_CHAIN, TYPE_BALANCER -> false
             else -> true
         }
@@ -376,6 +382,7 @@ data class ProxyEntity(
         hysteria2Bean = null
         sshBean = null
         wgBean = null
+        awgBean = null
         mieruBean = null
         tuic5Bean = null
         juicityBean = null
@@ -433,6 +440,10 @@ data class ProxyEntity(
             is WireGuardBean -> {
                 type = TYPE_WG
                 wgBean = bean
+            }
+            is AmneziaWGBean -> {
+                type = TYPE_AMNEZIAWG
+                awgBean = bean
             }
             is MieruBean -> {
                 type = TYPE_MIERU
@@ -497,6 +508,7 @@ data class ProxyEntity(
             TYPE_HYSTERIA2 -> Hysteria2SettingsActivity::class.java
             TYPE_SSH -> SSHSettingsActivity::class.java
             TYPE_WG -> WireGuardSettingsActivity::class.java
+            TYPE_AMNEZIAWG -> AmneziaWGSettingsActivity::class.java
             TYPE_MIERU -> MieruSettingsActivity::class.java
             TYPE_TUIC5 -> Tuic5SettingsActivity::class.java
             TYPE_JUICITY -> JuicitySettingsActivity::class.java

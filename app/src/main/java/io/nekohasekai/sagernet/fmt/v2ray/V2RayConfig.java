@@ -923,6 +923,51 @@ public class V2RayConfig {
 
     }
 
+    public static class AmneziaWGOutboundConfigurationObject implements OutboundConfigurationObject {
+
+        public List<String> address;
+        public String secretKey;
+        public Integer mtu;
+        public Integer workers;
+        public List<AmneziaWGPeerObject> peers;
+        public List<Integer> reserved;
+        public String domainStrategy;
+        public AmneziaWGObfuscationObject obfuscation;
+
+        public static class AmneziaWGPeerObject {
+
+            public String publicKey;
+            public String preSharedKey;
+            public String endpoint;
+            public Integer keepAlive;
+            public List<String> allowedIPs;
+
+        }
+
+        public static class AmneziaWGObfuscationObject {
+
+            public Integer jc;
+            public Integer jmin;
+            public Integer jmax;
+            public Integer s1;
+            public Integer s2;
+            public Integer s3;
+            public Integer s4;
+            public String h1;
+            public String h2;
+            public String h3;
+            public String h4;
+            public String i1;
+            public String i2;
+            public String i3;
+            public String i4;
+            public String i5;
+            public String headerProtectionKey;
+
+        }
+
+    }
+
     public static class SSHOutboundConfigurationObject implements OutboundConfigurationObject {
 
         public String address;

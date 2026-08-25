@@ -101,9 +101,11 @@ import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.VLESSOutboundConfigurationO
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.VMessOutboundConfigurationObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.WebSocketObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.WireGuardOutboundConfigurationObject
+import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.AmneziaWGOutboundConfigurationObject
 import io.nekohasekai.sagernet.fmt.v2ray.VLESSBean
 import io.nekohasekai.sagernet.fmt.v2ray.VMessBean
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
+import io.nekohasekai.sagernet.fmt.amneziawg.AmneziaWGBean
 import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.ktx.getArray
 import io.nekohasekai.sagernet.ktx.getBoolean
@@ -1300,6 +1302,60 @@ fun buildV2RayConfig(
                                             }
                                             endpoint = joinHostPort(bean.serverAddress, bean.serverPort)
                                         })
+                                    })
+                                if (currentDomainStrategy == "AsIs") {
+                                    currentDomainStrategy = "UseIP"
+                                }
+                            } else if (bean is AmneziaWGBean) {
+                                protocol = "amneziawg"
+                                settings = LazyOutboundConfigurationObject(this,
+                                    AmneziaWGOutboundConfigurationObject().apply {
+                                        address = bean.localAddress.listByLineOrComma()
+                                        secretKey = bean.privateKey
+                                        mtu = bean.mtu
+                                        val values = bean.reserved.listByLineOrComma()
+                                        if (values.size == 3) {
+                                            val reserved0 = values[0].toUByteOrNull()
+                                            val reserved1 = values[1].toUByteOrNull()
+                                            val reserved2 = values[2].toUByteOrNull()
+                                            if (reserved0 != null && reserved1 != null && reserved2 != null) {
+                                                reserved = listOf(reserved0.toInt(), reserved1.toInt(), reserved2.toInt())
+                                            }
+                                        } else {
+                                            val array = Base64.decode(bean.reserved)
+                                            if (array.size == 3) {
+                                                reserved = listOf(array[0].toUByte().toInt(), array[1].toUByte().toInt(), array[2].toUByte().toInt())
+                                            }
+                                        }
+                                        peers = listOf(AmneziaWGOutboundConfigurationObject.AmneziaWGPeerObject().apply {
+                                            publicKey = bean.peerPublicKey
+                                            if (bean.peerPreSharedKey.isNotEmpty()) {
+                                                preSharedKey = bean.peerPreSharedKey
+                                            }
+                                            if (bean.keepaliveInterval > 0) {
+                                                keepAlive = bean.keepaliveInterval
+                                            }
+                                            endpoint = joinHostPort(bean.serverAddress, bean.serverPort)
+                                        })
+                                        obfuscation = AmneziaWGOutboundConfigurationObject.AmneziaWGObfuscationObject().apply {
+                                            jc = bean.jc
+                                            jmin = bean.jmin
+                                            jmax = bean.jmax
+                                            s1 = bean.s1
+                                            s2 = bean.s2
+                                            s3 = bean.s3
+                                            s4 = bean.s4
+                                            h1 = bean.h1
+                                            h2 = bean.h2
+                                            h3 = bean.h3
+                                            h4 = bean.h4
+                                            i1 = bean.i1
+                                            i2 = bean.i2
+                                            i3 = bean.i3
+                                            i4 = bean.i4
+                                            i5 = bean.i5
+                                            headerProtectionKey = bean.headerProtectionKey
+                                        }
                                     })
                                 if (currentDomainStrategy == "AsIs") {
                                     currentDomainStrategy = "UseIP"
