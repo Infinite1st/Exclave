@@ -536,6 +536,7 @@
         <item>hellochrome_120_pq</item>
         <item>hellochrome_131</item>
         <item>hellochrome_133</item>
+        <item>hellochrome_155</item>
         <item>helloios_11_1</item>
         <item>helloios_12_1</item>
         <item>helloios_13</item>
@@ -549,7 +550,6 @@
     </string-array>
 
     <string-array name="reality_fingerprint_entry">
-        <item>@string/disable</item>
         <item>chrome</item>
         <item>firefox</item>
         <item>safari</item>
@@ -564,6 +564,7 @@
         <item>hellochrome_120</item>
         <item>hellochrome_131</item>
         <item>hellochrome_133</item>
+        <item>hellochrome_155</item>
         <item>helloios_13</item>
         <item>helloios_14</item>
         <item>helloedge_106</item>
@@ -600,7 +601,6 @@
     </string-array>
 
     <string-array name="reality_fingerprint_value">
-        <item />
         <item>chrome</item>
         <item>firefox</item>
         <item>safari</item>
@@ -615,6 +615,7 @@
         <item>hellochrome_120</item>
         <item>hellochrome_131</item>
         <item>hellochrome_133</item>
+        <item>hellochrome_155</item>
         <item>helloios_13</item>
         <item>helloios_14</item>
         <item>helloedge_106</item>
