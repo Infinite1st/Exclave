@@ -1,4 +1,14 @@
-Reality version code fix
+# Infinite1st/Exclave
+
+Patched fork of [ExclaveNetwork/Exclave](https://github.com/ExclaveNetwork/Exclave). Core: [Infinite1st/exclave-core](https://github.com/Infinite1st/exclave-core).
+
+## Changes from upstream
+
+- Icon color changed to dark green
+- Fingerprint selection is now mandatory; the bare Go-TLS option (no fingerprint) was removed from the list
+- Added an explicit hellochrome_155 preset
+- Default app theme changed from pink to black
+
 # Exclave
 
 Exclave is a proxy client.
