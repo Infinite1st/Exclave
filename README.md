@@ -1,5 +1,7 @@
 # Infinite1st/Exclave
 
+Core: [Infinite1st/exclave-core](https://github.com/Infinite1st/exclave-core).
+
 - Icon color changed to dark green
 - Fingerprint selection is now mandatory; the bare Go-TLS option (no fingerprint) was removed from the list
 - Added an explicit hellochrome_155 preset
