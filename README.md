@@ -3,6 +3,6 @@
 Core: [Infinite1st/exclave-core](https://github.com/Infinite1st/exclave-core).
 
 - Icon color changed to dark green
-- Fingerprint selection is now mandatory; the bare Go-TLS option (no fingerprint) was removed from the list
+- Chrome is now the default fingerprint for new profiles
 - Added an explicit hellochrome_155 preset
 - Default app theme changed from pink to black
