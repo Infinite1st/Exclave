@@ -48,6 +48,11 @@ jobs:
         with:
           ndk-version: r30
       - name: Update go.sum
+        env:
+          GOPROXY: direct
+          GOPRIVATE: "github.com/Infinite1st/exclave-core"
+          GONOSUMCHECK: "1"
+          GOSUMDB: "off"
         run: |
           cd library/core
           go mod tidy
