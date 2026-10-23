@@ -5,7 +5,7 @@ Core: [Infinite1st/exclave-core](https://github.com/Infinite1st/exclave-core).
 ## Exclave
 
 - Icon color changed to dark green
-- Chrome is now the default fingerprint for new profiles
+- Fingerprint selection is now mandatory; the disable option was removed, Chrome is first in the list and default for new profiles
 - Added an explicit hellochrome_155 preset
 - Default app theme changed from pink to black
 
