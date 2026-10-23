@@ -59,6 +59,10 @@ jobs:
       - name: Native Build
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          GOPROXY: direct
+          GOPRIVATE: "github.com/Infinite1st/exclave-core"
+          GONOSUMCHECK: "1"
+          GOSUMDB: "off"
         run: |
           ./run lib core
       - name: Upload Artifacts
