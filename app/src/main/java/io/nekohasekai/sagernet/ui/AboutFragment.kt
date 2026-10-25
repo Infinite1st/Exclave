@@ -141,7 +141,7 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                             .build())
                         .addItem(MaterialAboutActionItem.Builder()
                             .icon(R.drawable.ic_baseline_airplanemode_active_24)
-                            .text(getString(R.string.version_x, "infinite-core"))
+                            .text(getString(R.string.version_x, "exclave-core"))
                             .subText(Libexclavecore.getV2RayVersion())
                             .setOnClickAction {
                                 startActivity(Intent(
