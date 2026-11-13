@@ -93,6 +93,20 @@ class SagerNet : Application(),
         updateNotificationChannels()
         Seq.setContext(this)
 
+        if (DataStore.goDebug.isNotEmpty()) {
+            // This is set after Go runtime initialization. Therefore, not all GODEBUG can take effect.
+            Libexclavecore.setenv("GODEBUG", DataStore.goDebug)
+        }
+        if (DataStore.environmentVariables.isNotEmpty()) {
+            for (variable in DataStore.environmentVariables.split("\n")) {
+                if (!variable.contains("=")) continue
+                Libexclavecore.setenv(
+                    variable.substringBefore("="),
+                    variable.substringAfter("=")
+                )
+            }
+        }
+
         if (DataStore.getInstalledPackagesInited) {
             runOnDefaultDispatcher {
                 PackageCache.register()
@@ -128,13 +142,12 @@ class SagerNet : Application(),
         Libexclavecore.setenv("exclave.conf.geoloader", "memconservative")
         externalAssets.mkdirs()
         Libexclavecore.initializeV2Ray(
-            filesDir.absolutePath + "/",
-            externalAssets.absolutePath + "/",
+            externalAssets.canonicalPath + "/",
             "exclave-core/",
         )
 
         try {
-            if (DataStore.providerRootCA == RootCAProvider.SYSTEM_AND_USER) {
+            if (DataStore.providerRootCA == RootCAProvider.ANDROID) {
                 Libexclavecore.registerAndroidCAStore(this)
             }
             Libexclavecore.updateSystemRoots(DataStore.providerRootCA)

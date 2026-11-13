@@ -324,13 +324,19 @@ class AssetsActivity : ThemedActivity() {
             1 -> repo = "Loyalsoldier/v2ray-rules-dat"
             2 -> repo = "Chocolate4U/Iran-v2ray-rules"
             4 -> repo = "runetfreedom/russia-v2ray-rules-dat"
+            5 -> {
+                repo = "XTLS/Xray-rules-dat"
+                if (file.name == internalFiles[0]) {
+                    fileName = "geoip-lite.dat"
+                }
+            }
             else -> error("invalid asset provider")
         }
 
         val client = Libexclavecore.newHttpClient().apply {
             keepAlive()
             if (SagerNet.started && DataStore.startedProfile > 0) {
-                useUDS(SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc.sock")
+                useUDS(app.cacheDir.toString() + "/ipc.sock")
             }
         }
 
@@ -391,7 +397,7 @@ class AssetsActivity : ThemedActivity() {
         val client = Libexclavecore.newHttpClient().apply {
             keepAlive()
             if (SagerNet.started && DataStore.startedProfile > 0) {
-                useUDS(SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc.sock")
+                useUDS(app.cacheDir.toString() + "/ipc.sock")
             }
         }
         try {
