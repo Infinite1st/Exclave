@@ -109,7 +109,6 @@ import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.ktx.getArray
 import io.nekohasekai.sagernet.ktx.getBoolean
-import io.nekohasekai.sagernet.ktx.getBooleanProperty
 import io.nekohasekai.sagernet.ktx.getObject
 import io.nekohasekai.sagernet.ktx.getString
 import io.nekohasekai.sagernet.ktx.getStringArray
@@ -290,8 +289,8 @@ fun buildV2RayConfig(
     val destinationOverride = DataStore.destinationOverride
     val trafficStatistics = !forTest && DataStore.profileTrafficStatistics
     var hasTagDirect = false
-    val singUotEnabled = DataStore.experimentalFlagsProperties.getBooleanProperty("singuot")
-    val singMuxEnabled = DataStore.experimentalFlagsProperties.getBooleanProperty("singmux")
+    val singUotEnabled = DataStore.singuot
+    val singMuxEnabled = DataStore.singmux
 
     val shouldDumpUID = extraRules.any { it.packages.isNotEmpty() || it.customPackageNames.isNotEmpty() }
     val alerts = mutableListOf<Pair<Int, String>>()
@@ -363,7 +362,7 @@ fun buildV2RayConfig(
                 inbounds.add(InboundObject().apply {
                     tag = "ipc-in"
                     protocol = "ipc"
-                    val path = app.cacheDir.toString() + "/ipc.sock"
+                    val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc.sock"
                     val udsFile = File(path)
                     if (udsFile.exists()) udsFile.delete()
                     listen = path
@@ -749,8 +748,8 @@ fun buildV2RayConfig(
                                                         plugin = pluginConfiguration.selected
                                                         pluginOpts = pluginConfiguration.getOptions().toString()
                                                         if (!forExport
-                                                            && !(plugin == "v2ray-plugin" && DataStore.experimentalFlagsProperties.getBooleanProperty("useInternalV2RayPlugin"))
-                                                            && !(plugin == "obfs-local" && DataStore.experimentalFlagsProperties.getBooleanProperty("useInternalObfsLocal"))
+                                                            && !(plugin == "v2ray-plugin" && DataStore.useInternalV2RayPlugin)
+                                                            && !(plugin == "obfs-local" && DataStore.useInternalObfsLocal)
                                                         ) {
                                                             try {
                                                                 PluginManager.init(pluginConfiguration)?.let { (path, opts, isV2) ->
@@ -761,7 +760,7 @@ fun buildV2RayConfig(
                                                                         DataStore.serviceMode == Key.MODE_VPN && DataStore.tunImplementation == TunImplementation.SYSTEM
                                                                     }
                                                                     if (shouldProtect) {
-                                                                        pluginWorkingDir = app.cacheDir.toString()
+                                                                        pluginWorkingDir = SagerNet.deviceStorage.noBackupFilesDir.toString()
                                                                         if (isV2) {
                                                                             opts["__android_vpn"] = ""
                                                                         } else {
@@ -794,13 +793,13 @@ fun buildV2RayConfig(
                                             servers = listOf(SocksOutboundConfigurationObject.ServerObject().apply {
                                                 address = bean.serverAddress
                                                 port = bean.serverPort
-                                                if (bean.username.isNotEmpty() || bean.password.isNotEmpty() && bean.protocol == SOCKSBean.PROTOCOL_SOCKS5) {
+                                                if ((bean.username.isNotEmpty() || bean.password.isNotEmpty()) && bean.protocol == SOCKSBean.PROTOCOL_SOCKS5) {
                                                     users = listOf(SocksOutboundConfigurationObject.ServerObject.UserObject().apply {
                                                         user = bean.username
                                                         pass = bean.password
                                                     })
                                                 }
-                                                if (bean.protocol == SOCKSBean.PROTOCOL_SOCKS4 || bean.protocol == SOCKSBean.PROTOCOL_SOCKS4A && bean.username.isNotEmpty()) {
+                                                if ((bean.protocol == SOCKSBean.PROTOCOL_SOCKS4 || bean.protocol == SOCKSBean.PROTOCOL_SOCKS4A) && bean.username.isNotEmpty()) {
                                                     users = listOf(SocksOutboundConfigurationObject.ServerObject.UserObject().apply {
                                                         user = bean.username
                                                     })
@@ -881,11 +880,21 @@ fun buildV2RayConfig(
                                                 if (bean.allowInsecure) {
                                                     allowInsecure = true
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
-                                                    fingerprint = overrideFingerprint
-                                                } else if (bean.utlsFingerprint.isNotEmpty()) {
-                                                    fingerprint = bean.utlsFingerprint
+                                                val canSetFingerprint = when (bean.type) {
+                                                    "kcp", "quic", "hysteria2" -> false
+                                                    "splithttp" -> !bean.shUseBrowserForwarder &&
+                                                            (bean.alpn.listByLineOrComma().size != 1 ||
+                                                            bean.alpn.listByLineOrComma()[0] != "h3")
+                                                    "ws" -> !bean.wsUseBrowserForwarder
+                                                    else -> true
+                                                }
+                                                if (canSetFingerprint) {
+                                                    val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                                    if (overrideFingerprint.isNotEmpty()) {
+                                                        fingerprint = overrideFingerprint
+                                                    } else if (bean.utlsFingerprint.isNotEmpty()) {
+                                                        fingerprint = bean.utlsFingerprint
+                                                    }
                                                 }
                                                 if (bean.echEnabled) {
                                                     ech = TLSObject.ECHObject().apply {
@@ -916,11 +925,19 @@ fun buildV2RayConfig(
                                                 if (bean.realityMldsa65Verify.isNotEmpty()) {
                                                     mldsa65Verify = bean.realityMldsa65Verify
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForREALITY")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
-                                                    fingerprint = overrideFingerprint
-                                                } else if (bean.realityFingerprint.isNotEmpty()) {
-                                                    fingerprint = bean.realityFingerprint
+                                                val canSetFingerprint = when (bean.type) {
+                                                    "kcp", "quic", "hysteria2" -> false
+                                                    "ws" -> !bean.wsUseBrowserForwarder
+                                                    "splithttp" -> !bean.wsUseBrowserForwarder
+                                                    else -> true
+                                                }
+                                                if (canSetFingerprint) {
+                                                    val overrideFingerprint = DataStore.overrideUTLSFingerprintForREALITY
+                                                    if (overrideFingerprint.isNotEmpty()) {
+                                                        fingerprint = overrideFingerprint
+                                                    } else if (bean.realityFingerprint.isNotEmpty()) {
+                                                        fingerprint = bean.realityFingerprint
+                                                    }
                                                 }
                                                 if (DataStore.realityDisableX25519Mlkem768 || bean.realityDisableX25519Mlkem768 && !forExport) {
                                                     disableX25519MLKEM768 = true
@@ -1060,6 +1077,10 @@ fun buildV2RayConfig(
                                                 }
                                                 if (bean.splithttpMode != "auto") {
                                                     mode = bean.splithttpMode
+                                                }
+                                                if (bean.splithttpChromeParrot && bean.security == "tls" && bean.alpn.listByLineOrComma().size == 1 &&
+                                                    bean.alpn.listByLineOrComma()[0] == "h3") {
+                                                    chromeParrot = true
                                                 }
                                                 if (bean.splithttpExtra.isNotEmpty()) {
                                                     try {
@@ -1218,6 +1239,7 @@ fun buildV2RayConfig(
                                         && !(bean is ShadowsocksBean && bean.plugin.isNotEmpty() && PluginConfiguration(bean.plugin).selected.isNotEmpty())
                                         && !(network == "ws" && bean.wsUseBrowserForwarder)
                                         && !(network == "splithttp" && bean.shUseBrowserForwarder)
+                                        && !(network == "splithttp" && security == "tls" && bean.alpn.listByLineOrComma().size == 1 && bean.alpn.listByLineOrComma()[0] == "h3")
                                     ) {
                                         sockopt = StreamSettingsObject.SockoptObject().apply {
                                             tlsFragmentation = StreamSettingsObject.SockoptObject.TLSFragmentationObject().apply {
@@ -1635,8 +1657,8 @@ fun buildV2RayConfig(
                                                 if (bean.allowInsecure) {
                                                     allowInsecure = true
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                                if (overrideFingerprint.isNotEmpty()) {
                                                     fingerprint = overrideFingerprint
                                                 } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.utlsFingerprint
@@ -1667,8 +1689,8 @@ fun buildV2RayConfig(
                                                 if (bean.realityShortId.isNotEmpty()) {
                                                     shortId = bean.realityShortId
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForREALITY")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                val overrideFingerprint = DataStore.overrideUTLSFingerprintForREALITY
+                                                if (overrideFingerprint.isNotEmpty()) {
                                                     fingerprint = overrideFingerprint
                                                 } else if (bean.realityFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.realityFingerprint
@@ -1792,7 +1814,7 @@ fun buildV2RayConfig(
                                     if (version == SnellBean.VERSION_6) {
                                         mode = bean.mode
                                     }
-                                    if (DataStore.experimentalFlagsProperties.getBooleanProperty("singSnellUserKey") && bean.userKey.isNotEmpty()) {
+                                    if (DataStore.singSnellUserKey && bean.userKey.isNotEmpty()) {
                                         userKey = bean.userKey
                                     }
                                 })
@@ -1883,8 +1905,8 @@ fun buildV2RayConfig(
                                             allowInsecure = true
                                         }
                                         if (bean.protocol == "https") {
-                                            val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                            if (!overrideFingerprint.isNullOrEmpty()) {
+                                            val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                            if (overrideFingerprint.isNotEmpty()) {
                                                 fingerprint = overrideFingerprint
                                             } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                 fingerprint = bean.utlsFingerprint
@@ -1993,8 +2015,8 @@ fun buildV2RayConfig(
                                                 allowInsecure = true
                                             }
                                             if (!bean.http3) {
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                                if (overrideFingerprint.isNotEmpty()) {
                                                     fingerprint = overrideFingerprint
                                                 } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.utlsFingerprint
@@ -2544,7 +2566,7 @@ fun buildV2RayConfig(
         if (!forTest && !forExport) {
             inbounds.add(InboundObject().apply {
                 tag = TAG_DNS_IN
-                val path = app.cacheDir.toString() + "/ipc_dns.sock"
+                val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_dns.sock"
                 val udsFile = File(path)
                 if (udsFile.exists()) udsFile.delete()
                 listen = path
@@ -2581,7 +2603,7 @@ fun buildV2RayConfig(
             settings = LazyOutboundConfigurationObject(this,
                 DNSOutboundConfigurationObject().apply {
                     userLevel = 1
-                    if (DataStore.experimentalFlagsProperties.getBooleanProperty("lookupAsExchange")) {
+                    if (DataStore.lookupAsExchange) {
                         lookupAsExchange = true
                     }
                 })
@@ -2677,8 +2699,8 @@ fun buildV2RayConfig(
         }
 
         if (DataStore.enableDnsRouting) {
-            val directDNSDomainList = DataStore.experimentalFlagsProperties.getProperty("directDNSDomainList")
-            if (directDNSDomainList != null) {
+            val directDNSDomainList = DataStore.directDNSDomainList
+            if (directDNSDomainList.isNotEmpty()) {
                 if (!forTest && DataStore.routeMode == RouteMode.RULE) {
                     bypassDomain.addAll(directDNSDomainList.split(","))
                 }
@@ -2689,8 +2711,8 @@ fun buildV2RayConfig(
                     }
                 }
             }
-            val remoteDNSDomainList = DataStore.experimentalFlagsProperties.getProperty("remoteDNSDomainList")
-            if (remoteDNSDomainList != null) {
+            val remoteDNSDomainList = DataStore.remoteDNSDomainList
+            if (remoteDNSDomainList.isNotEmpty()) {
                 if (!forTest && DataStore.routeMode == RouteMode.RULE) {
                     proxyDomain.addAll(remoteDNSDomainList.split(","))
                 }
@@ -3007,7 +3029,7 @@ fun buildCustomConfig(proxy: ProxyEntity, forTest: Boolean = false, forExport: B
         inbounds.add(InboundObject().apply {
             tag = "ipc-in"
             protocol = "ipc"
-            val path = app.cacheDir.toString() + "/ipc.sock"
+            val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc.sock"
             val udsFile = File(path)
             if (udsFile.exists()) udsFile.delete()
             listen = path
@@ -3028,7 +3050,7 @@ fun buildCustomConfig(proxy: ProxyEntity, forTest: Boolean = false, forExport: B
         })
         inbounds.add(InboundObject().apply {
             tag = TAG_DNS_IN
-            val path = app.cacheDir.toString() + "/ipc_dns.sock"
+            val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_dns.sock"
             val udsFile = File(path)
             if (udsFile.exists()) udsFile.delete()
             listen = path
